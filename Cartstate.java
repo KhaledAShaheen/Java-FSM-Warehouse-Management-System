@@ -98,6 +98,11 @@ public class Cartstate extends WarehouseState {
     }
 
     public void checkOut() {
+        Iterator<Record> records = warehouse.getWishList(WarehouseContext.instance().getUser());
+        if (records.hasNext() == false) {
+            System.out.println("Nothing to checkout, wishlist empty!");
+            return;
+        }
         if (WarehouseContext.yesOrNo("Confirm Order?")) {
             Iterator<Invoice> invoices = warehouse.createInvoice(WarehouseContext.instance().getUser());
             System.out.println("Order confirmed!");
