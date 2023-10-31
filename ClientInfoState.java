@@ -73,6 +73,7 @@ public class ClientInfoState extends WarehouseState {
 
     public void showClientsWithBalance() {
         Iterator<Client> allClients = warehouse.getClients();
+        int hasClients = 0;
         if (allClients.hasNext() == false) {
             System.out.println("No clients to print");
             return;
@@ -81,14 +82,19 @@ public class ClientInfoState extends WarehouseState {
             Client client = (Client) (allClients.next());
             if (client.getBalance() > 0) {
                 System.out.println(client);
+                hasClients++;
             }
+        }
+        if (hasClients == 0) {
+            System.out.println("No clients to print with outstanding balance");
+            return;
         }
     }
 
     public void showClientsWithoutTransactions() {
         Iterator<Invoice> invoices = warehouse.getInvoiceList(WarehouseContext.instance().getUser());
         int hasInvoices = 0;
-        if (invoices.hasNext() == false) {
+        if (invoices == null) {
             System.out.println("No invoices to print");
             return;
         }

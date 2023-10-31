@@ -119,7 +119,7 @@ public class Managerstate extends WarehouseState {
     warehouse.addQtyToProduct(productId, quantity);
     Iterator<Hold> waitListItems = warehouse.getWaitListCopy(productId);
     if (waitListItems.hasNext() == false) {
-      System.out.println("No holds to print");
+      System.out.println("No waitlist items to print");
       return;
     }
     int qtyLeft = 0;

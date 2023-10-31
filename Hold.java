@@ -4,10 +4,15 @@ public class Hold implements Serializable {
     private static final long serialVersionUID = 1L;
     private Client client;
     private int amount;
+    private String productId;
 
     public Hold(Client client, int amount) {
         this.client = client;
         this.amount = amount;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
     public void setClient(Client client) {
@@ -26,8 +31,13 @@ public class Hold implements Serializable {
         return amount;
     }
 
+    public String getProductId() {
+        return productId;
+    }
+
     public String toString() {
-        String string = "ClientID: " + client.getClientID() + "  Client Name: " + client.getName() + "  Amount: "
+        String string = "ProductID: " + productId + " ClientID: " + client.getClientID() + "  Client Name: "
+                + client.getName() + "  Amount: "
                 + amount;
         return string;
     }

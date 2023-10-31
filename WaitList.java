@@ -5,11 +5,13 @@ public class WaitList implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private List<Hold> holds = new LinkedList<Hold>();
+    private String productId;
 
     public WaitList() {
     }
 
-    public boolean insertHold(Hold hold) {
+    public boolean insertHold(Hold hold, String productId) {
+        hold.setProductId(productId);
         Hold holdToChange = search(hold.getClient().getClientID());
         if (holdToChange != null) {
             holdToChange.setAmount(holdToChange.getAmount() + hold.getAmount());

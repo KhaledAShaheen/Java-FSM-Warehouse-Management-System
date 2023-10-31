@@ -22,8 +22,8 @@ public class Product implements Serializable {
         return waitList.search(clientId);
     }
 
-    public boolean addHold(Hold hold) {
-        return waitList.insertHold(hold);
+    public boolean addHold(Hold hold, String id) {
+        return waitList.insertHold(hold, id);
     }
 
     public boolean removeHold(String clientId) {
@@ -50,6 +50,7 @@ public class Product implements Serializable {
         List<Hold> holds = new LinkedList<Hold>();
         for (Hold hold : getHoldsList()) {
             Hold newHold = new Hold(hold.getClient(), hold.getAmount());
+            hold.setProductId(hold.getProductId());
             holds.add(newHold);
         }
         return holds.iterator();

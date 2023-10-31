@@ -99,9 +99,9 @@ public class Cartstate extends WarehouseState {
 
     public void checkOut() {
         if (WarehouseContext.yesOrNo("Confirm Order?")) {
-            List<Invoice> invoices = warehouse.createInvoice(WarehouseContext.instance().getUser());
+            Iterator<Invoice> invoices = warehouse.createInvoice(WarehouseContext.instance().getUser());
             System.out.println("Order confirmed!");
-            if (invoices.isEmpty()) {
+            if (invoices == null) {
                 System.out.println("nothing invoiced");
             } else {
                 System.out.println("invoice created");

@@ -64,7 +64,7 @@ public class Clientstate extends WarehouseState {
         System.out.println(SHOW_CLIENT_PAYMENTS + " to show payments");
         System.out.println(CART_STATE + " go to cart state");
         System.out.println(DISPLAY_WAITLIST + " to display client's waitlist");
-        System.out.println(LOGOUT + " to logout");
+        System.out.println(LOGOUT + " to logout of client state");
         System.out.println(HELP + " for help");
     }
 
@@ -88,7 +88,8 @@ public class Clientstate extends WarehouseState {
         }
         while (allProducts.hasNext()) {
             Product product = (Product) (allProducts.next());
-            System.out.println(product);
+            System.out.println("Product ID: " + product.getId() + " Name: " + product.getName() + " Sale Price: "
+                    + product.getSalePrice());
         }
     }
 

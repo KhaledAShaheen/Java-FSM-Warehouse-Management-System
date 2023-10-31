@@ -95,12 +95,14 @@ public class Warehouse implements Serializable {
                 client.setBalanace(client.getBalance() + price);
                 Invoice invoice = product.createInvoice(clientId, price, quantity);
                 product.setAmount(product.getAmount() - quantity);
+                addInvoiceToInvoiceList(invoice, client);
                 return invoice;
             } else if (quantity >= product.getAmount() && product.getAmount() != 0) {
                 price = product.getAmount() * product.getSalePrice();
                 product.editHoldQty(clientId, quantity - product.getAmount());
                 client.setBalanace(client.getBalance() + price);
                 Invoice invoice = product.createInvoice(clientId, price, product.getAmount());
+                addInvoiceToInvoiceList(invoice, client);
                 product.setAmount(0);
                 return invoice;
             }
@@ -112,10 +114,9 @@ public class Warehouse implements Serializable {
         client.setWishList(wishlistCopy);
     }
 
-    public List<Invoice> createInvoice(String clientId) {
+    public Iterator<Invoice> createInvoice(String clientId) {
         Client client = searchClient(clientId);
         Iterator<Record> wishListItems = generateWishListCopy(clientId).retrieveRecords();
-        List<Invoice> invoices = new LinkedList<>();
         double price = 0.0;
         double totalPriceInvoice = 0.0;
         while (wishListItems.hasNext()) {
@@ -139,13 +140,13 @@ public class Warehouse implements Serializable {
                             client);
                 }
                 Hold hold = new Hold(client, wishListItem.getQuantity() - inventoryProduct.getAmount());
-                inventoryProduct.addHold(hold);
+                inventoryProduct.addHold(hold, inventoryProduct.getId());
                 inventoryProduct.setAmount(0);
             }
             totalPriceInvoice += price;
         }
         client.setBalanace(client.getBalance() + totalPriceInvoice);
-        return invoices;
+        return getInvoiceList(clientId);
     }
 
     public void acceptPayment(float payment, String clientId) {
@@ -162,7 +163,7 @@ public class Warehouse implements Serializable {
         if (result != null) {
             Iterator<Product> allProducts = warehouse.getProducts();
             if (allProducts.hasNext() == false) {
-                return;
+                return null;
             }
             while (allProducts.hasNext()) {
                 Product product = (Product) (allProducts.next());
