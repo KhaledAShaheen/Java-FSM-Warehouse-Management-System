@@ -32,7 +32,7 @@ public class Managerstate extends WarehouseState {
     System.out.println("Enter a number between 0 and 5 as explained below:");
 
     System.out.println(EXIT + " to Exit\n");
-    System.out.println(ADD_PRODUCTS + " to add products");
+    System.out.println(ADD_PRODUCTS + " to add product");
     System.out.println(PROCESS_SHIPMENT + " to receive a shipment");
     System.out.println(CLERK_MENU + " to become a clerk");
     System.out.println(LOGOUT + " to logout");

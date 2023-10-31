@@ -31,9 +31,10 @@ public class ClientInfoState extends WarehouseState {
     public void help() {
         System.out.println("Enter a number between 0 and 4 as explained below:");
         System.out.println(EXIT + " to Exit\n");
-        System.out.println(DISPLAY_CLIENTS + " to add products");
-        System.out.println(DISPLAY_CLIENTS_OUTSTANDING_BALANCE + " to show waitlist for a product");
-        System.out.println(DISPLAY_CLIENTS_NO_TRANSACTION + " to receive a shipment");
+        System.out.println(DISPLAY_CLIENTS + " to display all clients");
+        System.out.println(DISPLAY_CLIENTS_OUTSTANDING_BALANCE + " to display all clients with outstanding balance");
+        System.out.println(
+                DISPLAY_CLIENTS_NO_TRANSACTION + " to display all clients without transactions in the last 6 months");
         System.out.println(HELP + " for help");
     }
 
