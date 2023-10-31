@@ -6,19 +6,13 @@ public class InvoiceList implements Serializable {
 
     private List<Invoice> invoices;
 
-    public InvoiceList(){
+    public InvoiceList() {
         invoices = new LinkedList<Invoice>();
     }
 
     public Invoice insertInvoice(Invoice invoice) {
-        Invoice invoiceToChange = search(invoice.getProduct().getId());
-        if (invoiceToChange != null) {
-            invoiceToChange.setQuantity(invoiceToChange.getQuantity() + invoice.getQuantity());
-            return invoiceToChange;
-        } else {
-            invoices.add(invoice);
-            return invoice;
-        }
+        invoices.add(invoice);
+        return invoice;
     }
 
     public boolean removeInvoice(String productId) {
@@ -29,7 +23,7 @@ public class InvoiceList implements Serializable {
         }
         return false;
     }
-    
+
     public Invoice search(String productId) {
         for (Iterator<Invoice> iterator = invoices.iterator(); iterator.hasNext();) {
             Invoice invoice = (Invoice) iterator.next();

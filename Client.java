@@ -10,6 +10,7 @@ public class Client implements Serializable {
   private WishList wishList;
   private double Balance;
   private InvoiceList invoiceList;
+  private LinkedList<Double> paymentList;
 
   public Client(String Name, String Address) {
     this.Name = Name;
@@ -18,10 +19,28 @@ public class Client implements Serializable {
     ClientID = CLIENT_STRING + (ClientIdServer.instance()).getId(); // do ClientIdServer
     this.wishList = new WishList();
     this.invoiceList = new InvoiceList();
+    this.paymentList = new LinkedList<Double>();
+
+  }
+
+  public void addPayment(double payment) {
+    paymentList.add(payment);
+  }
+
+  public Iterator<Double> retrievePayments() {
+    return paymentList.iterator();
   }
 
   public Record addRecord(Record record) {
     return wishList.insertRecord(record);
+  }
+
+  public Boolean removeRecord(String productId) {
+    return wishList.removeRecord(productId);
+  }
+
+  public Boolean editQunatity(String productId, Integer Qunatity) {
+    return wishList.editQunatity(productId, Qunatity);
   }
 
   public Iterator<Record> getRecords() {

@@ -128,7 +128,7 @@ public class UserInterface {
         System.out.println(SAVE + " to save data");
         System.out.println(RETRIEVE + " to retrieve");
         System.out.println(HELP + " for help");
-        //yesOrNo(null);
+        // yesOrNo(null);
     }
 
     public void addClient() {

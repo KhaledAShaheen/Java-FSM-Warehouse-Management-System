@@ -102,33 +102,57 @@ public class WarehouseContext {
             warehouse = Warehouse.instance();
         }
         // set up the FSM and transition table;
-        states = new WarehouseState[4];
+        states = new WarehouseState[6];
         states[0] = Clientstate.instance();
         states[1] = Clerkstate.instance();
         states[2] = Managerstate.instance();
         states[3] = Loginstate.instance();
-        nextState = new int[4][4];
+        states[4] = Cartstate.instance();
+        states[5] = ClientInfoState.instance();
+        nextState = new int[6][6];
 
         // CLIENTSTATE
         nextState[0][0] = 0;
         nextState[0][1] = 1;
         nextState[0][2] = -2;
         nextState[0][3] = 3;
+        nextState[0][4] = 4;
+        nextState[0][5] = -2;
         // CLERKSTATE
         nextState[1][0] = 0;
         nextState[1][1] = 1;
         nextState[1][2] = 2;
         nextState[1][3] = 3;
+        nextState[1][4] = -2;
+        nextState[1][5] = 5;
         // MANGERSTATE
         nextState[2][0] = -2;
         nextState[2][1] = 1;
         nextState[2][2] = 2;
         nextState[2][3] = 3;
+        nextState[2][4] = -2;
+        nextState[2][5] = -2;
         // LOGIN STATE
         nextState[3][0] = 0;
         nextState[3][1] = 1;
         nextState[3][2] = 2;
         nextState[3][3] = -1;
+        nextState[3][4] = -2;
+        nextState[3][5] = -2;
+        // CART STATE
+        nextState[4][0] = 0;
+        nextState[4][1] = -2;
+        nextState[4][2] = -2;
+        nextState[4][3] = -2;
+        nextState[4][4] = -2;
+        nextState[4][5] = -2;
+        // CLIENT INFORMATION STATE
+        nextState[5][0] = -2;
+        nextState[5][1] = 1;
+        nextState[5][2] = -2;
+        nextState[5][3] = -2;
+        nextState[5][4] = -2;
+        nextState[5][5] = -2;
         currentState = 3; // current is login
     }
 

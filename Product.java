@@ -18,6 +18,10 @@ public class Product implements Serializable {
         this.waitList = new WaitList();
     }
 
+    public Hold searchHoldByClientId(String clientId) {
+        return waitList.search(clientId);
+    }
+
     public boolean addHold(Hold hold) {
         return waitList.insertHold(hold);
     }

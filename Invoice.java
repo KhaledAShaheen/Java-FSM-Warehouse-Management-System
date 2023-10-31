@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.time.LocalDate;
 
 public class Invoice implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -6,12 +7,14 @@ public class Invoice implements Serializable {
   private int quantity;
   private double totalPrice;
   private String clientId;
+  private LocalDate date;
 
   public Invoice(Product product, int quantity, double totalPrice, String clientId) {
     this.product = product;
     this.quantity = quantity;
     this.totalPrice = totalPrice;
     this.clientId = clientId;
+    this.date = LocalDate.now();
   }
 
   public Product getProduct() {
@@ -20,6 +23,10 @@ public class Invoice implements Serializable {
 
   public int getQuantity() {
     return quantity;
+  }
+
+  public LocalDate getDate() {
+    return date;
   }
 
   public double getTotalPrice() {

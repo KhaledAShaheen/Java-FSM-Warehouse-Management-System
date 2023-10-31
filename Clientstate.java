@@ -9,11 +9,12 @@ public class Clientstate extends WarehouseState {
     private static final int SHOW_CLIENT_DETAILS = 1;
     private static final int SHOW_PRODUCT_LIST = 2;
     private static final int SHOW_CLIENT_TRANSACTIONS = 3;
-    private static final int MODIFY_SHOPPING_CART = 4;
-    private static final int DISPLAY_WISHLIST = 5;
-    private static final int PROCESS_ORDER = 6;
-    private static final int LOGOUT = 7;
-    private static final int HELP = 8;
+    private static final int SHOW_CLIENT_PAYMENTS = 4;
+    private static final int CART_STATE = 5;
+    private static final int DISPLAY_WAITLIST = 6;
+    private static final int PROCESS_ORDER = 7;
+    private static final int LOGOUT = 8;
+    private static final int HELP = 9;
 
     private Clientstate() {
         warehouse = Warehouse.instance();
@@ -55,14 +56,14 @@ public class Clientstate extends WarehouseState {
     }
 
     public void help() {
-        System.out.println("Enter a number between 0 and 8 as explained below:");
+        System.out.println("Enter a number between 0 and 9 as explained below:");
         System.out.println(EXIT + " to Exit\n");
         System.out.println(SHOW_CLIENT_DETAILS + " to show client details");
         System.out.println(SHOW_PRODUCT_LIST + " to show products with sale price");
         System.out.println(SHOW_CLIENT_TRANSACTIONS + " to show transactions");
-        System.out.println(MODIFY_SHOPPING_CART + " to modify shopping cart");
-        System.out.println(DISPLAY_WISHLIST + " to display wishlist");
-        System.out.println(PROCESS_ORDER + " to process order");
+        System.out.println(SHOW_CLIENT_PAYMENTS + " to show payments");
+        System.out.println(CART_STATE + " go to cart state");
+        System.out.println(DISPLAY_WAITLIST + " to display client's waitlist");
         System.out.println(LOGOUT + " to logout");
         System.out.println(HELP + " for help");
     }
@@ -103,145 +104,35 @@ public class Clientstate extends WarehouseState {
         }
     }
 
-    public void modifyCartMenu() {
-        System.out.println(1 + " Add products to shopping cart");
-        System.out.println(2 + " Modify existing shopping cart");
-        System.out.println("X" + " Anything else to exit");
-    }
-
-    public void modifyShoppingCart() {
-        int choice;
-        modifyCartMenu();
-        choice = WarehouseContext.getNumber("");
-
-        if (choice == 1) {
-
-            Client client = warehouse.searchClient(WarehouseContext.instance().getUser());
-
-            while (true) // Keep adding products until client says no
-            {
-                String productId = WarehouseContext.getToken("Enter product's id");
-                int quantity = WarehouseContext.getNumber("Enter product quantity");
-                Record result = warehouse.addProductToWishlist(productId, quantity, client);
-                if (result != null) {
-                    System.out.println(result);
-                } else {
-                    System.out.println("Product wasn't found");
-                }
-                if (!WarehouseContext.yesOrNo("Add more products?")) {
-                    break;
-                }
-
-            }
-        }
-
-        else if (choice == 2) {
-            Client client = warehouse.searchClient(WarehouseContext.instance().getUser());
-            Iterator<Record> wishListItems = warehouse.getWishList(WarehouseContext.instance().getUser());
-            WishList wishlistCopy = warehouse.generateWishListCopy(client);
-
-            if (wishListItems.hasNext() == false) {
-                System.out.println("No records to print");
-                return;
-            }
-            while (wishListItems.hasNext()) {
-                Record wishListItem = (Record) (wishListItems.next());
-                System.out.println(wishListItem);
-                System.out.println("1. Keep Product");
-                System.out.println("2. Remove Product");
-                System.out.println("3. Change Product Qunatity");
-                int value = Integer.parseInt(WarehouseContext.getToken("Enter Choice:"));
-                switch (value) {
-                    case 1:
-                        break;
-                    case 2:
-                        Boolean result1 = wishlistCopy.removeRecord(wishListItem.getProduct().getId());
-                        if (result1) {
-                            System.out.println("Remove Successful!");
-                        }
-                        break;
-                    case 3:
-                        int newQuantity = WarehouseContext.getNumber("Enter the product's new Qunatity:");
-                        Boolean result2 = wishlistCopy.editQunatity(wishListItem.getProduct().getId(), newQuantity);
-                        if (result2) {
-                            System.out.println("Edit Successful!");
-                        }
-                        break;
-                }
-
-            }
-            warehouse.updateWishList(client, wishlistCopy);
-        }
-
-    }
-
-    public void showProductsInWishlist() {
-        Iterator<Record> records = warehouse.getWishList(WarehouseContext.instance().getUser());
-        if (records.hasNext() == false) {
-            System.out.println("No records to print");
+    public void showPayments() {
+        Iterator<Double> payments = warehouse.getPayments(WarehouseContext.instance().getUser());
+        int num = 1;
+        if (payments.hasNext() == false) {
+            System.out.println("No payments to print");
             return;
         }
-        while (records.hasNext()) {
-            Record record = (Record) (records.next());
-            System.out.println(record);
+        while (payments.hasNext()) {
+            Double payment = (Double) (payments.next());
+            System.out.println("amount " + num + ": " + payment);
+            num++;
         }
     }
 
-    public void processOrder() {
+    public void cartState() {
+        WarehouseContext.instance().changeState(4);
+    }
 
-        Client client = warehouse.searchClient(WarehouseContext.instance().getUser());
-
-        Iterator<Record> wishListItems = warehouse.getWishList(WarehouseContext.instance().getUser());
-        WishList wishlistCopy = warehouse.generateWishListCopy(client);
-
-        if (wishListItems.hasNext() == false) {
-            System.out.println("No records to print");
+    public void showProductsInWaitlist() {
+        Iterator<Hold> waitlist = warehouse.getWaitListByClientId(WarehouseContext.instance().getUser());
+        if (waitlist.hasNext() == false) {
+            System.out.println("No products in waitlist to print");
             return;
         }
-        while (wishListItems.hasNext()) {
-            Record wishListItem = (Record) (wishListItems.next());
-            System.out.println(wishListItem);
-            System.out.println("1. Keep Product");
-            System.out.println("2. Remove Product");
-            System.out.println("3. Change Product Qunatity");
-            int value = Integer.parseInt(WarehouseContext.getToken("Enter Choice:"));
-            switch (value) {
-                case 1:
-                    break;
-                case 2:
-                    Boolean result1 = wishlistCopy.removeRecord(wishListItem.getProduct().getId());
-                    if (result1) {
-                        System.out.println("Remove Successful!");
-                    }
-                    break;
-                case 3:
-                    int newQuantity = WarehouseContext.getNumber("Enter the product's new Qunatity:");
-                    Boolean result2 = wishlistCopy.editQunatity(wishListItem.getProduct().getId(), newQuantity);
-                    if (result2) {
-                        System.out.println("Edit Successful!");
-                    }
-                    break;
-            }
-
+        while (waitlist.hasNext()) {
+            Hold hold = (Hold) (waitlist.next());
+            System.out.println(hold);
         }
-        if (WarehouseContext.yesOrNo("Confirm Order?")) {
-            warehouse.updateWishList(client, wishlistCopy);
-            List<Invoice> invoices = warehouse.createInvoice(client, wishlistCopy);
 
-            for (int i = 0; i < invoices.size(); i++) {
-                warehouse.addInvoiceToInvoiceList(invoices.get(i), client);
-            }
-
-            System.out.println("Order confirmed!");
-            if (!invoices.isEmpty()) {
-                System.out.println("Invoice:");
-                System.out.println(invoices.toString());
-            } else {
-                System.out.println("nothing invoiced");
-            }
-        } else {
-            System.out.println("Order NOT confirmed!");
-        }
     }
 
     public void process() {
@@ -259,14 +150,14 @@ public class Clientstate extends WarehouseState {
                 case SHOW_CLIENT_TRANSACTIONS:
                     showTransactions();
                     break;
-                case MODIFY_SHOPPING_CART:
-                    modifyShoppingCart();
+                case SHOW_CLIENT_PAYMENTS:
+                    showPayments();
                     break;
-                case DISPLAY_WISHLIST:
-                    showProductsInWishlist();
+                case CART_STATE:
+                    cartState();
                     break;
-                case PROCESS_ORDER:
-                    processOrder();
+                case DISPLAY_WAITLIST:
+                    showProductsInWaitlist();
                     break;
                 case LOGOUT:
                     logout();
