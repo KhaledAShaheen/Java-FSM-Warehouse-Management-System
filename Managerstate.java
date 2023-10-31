@@ -10,11 +10,10 @@ public class Managerstate extends WarehouseState {
 
   private static final int EXIT = 0;
   private static final int ADD_PRODUCTS = 1;
-  private static final int SHOW_PRODUCTS_IN_WAITLIST = 2;
-  private static final int PROCESS_SHIPMENT = 3;
-  private static final int CLERK_MENU = 4;
-  private static final int LOGOUT = 5;
-  private static final int HELP = 6;
+  private static final int PROCESS_SHIPMENT = 2;
+  private static final int CLERK_MENU = 3;
+  private static final int LOGOUT = 4;
+  private static final int HELP = 5;
 
   private Managerstate() {
     super();
@@ -30,11 +29,10 @@ public class Managerstate extends WarehouseState {
   }
 
   public void help() {
-    System.out.println("Enter a number between 0 and 6 as explained below:");
+    System.out.println("Enter a number between 0 and 5 as explained below:");
 
     System.out.println(EXIT + " to Exit\n");
     System.out.println(ADD_PRODUCTS + " to add products");
-    System.out.println(SHOW_PRODUCTS_IN_WAITLIST + " to show waitlist for a product");
     System.out.println(PROCESS_SHIPMENT + " to receive a shipment");
     System.out.println(CLERK_MENU + " to become a clerk");
     System.out.println(LOGOUT + " to logout");
@@ -70,9 +68,6 @@ public class Managerstate extends WarehouseState {
 
         case ADD_PRODUCTS:
           addProduct();
-          break;
-        case SHOW_PRODUCTS_IN_WAITLIST:
-          showProductsInWaitlist();
           break;
         case PROCESS_SHIPMENT:
           processShippment();
@@ -111,24 +106,6 @@ public class Managerstate extends WarehouseState {
         break;
       }
     } while (true);
-  }
-
-  public void showProductsInWaitlist() {
-    String productId = WarehouseContext.getToken("Enter product's id");
-    Product product = warehouse.searchProduct(productId);
-    if (product == null) {
-      System.out.println("Product not found");
-      return;
-    }
-    Iterator<Hold> holds = warehouse.getWaitList(productId);
-    if (holds.hasNext() == false) {
-      System.out.println("No holds to print");
-      return;
-    }
-    while (holds.hasNext()) {
-      Hold hold = (Hold) (holds.next());
-      System.out.println(hold);
-    }
   }
 
   public void processShippment() {
