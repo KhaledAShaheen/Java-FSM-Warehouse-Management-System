@@ -50,7 +50,7 @@ public class Product implements Serializable {
         List<Hold> holds = new LinkedList<Hold>();
         for (Hold hold : getHoldsList()) {
             Hold newHold = new Hold(hold.getClient(), hold.getAmount());
-            hold.setProductId(hold.getProductId());
+            newHold.setProductId(hold.getProductId());
             holds.add(newHold);
         }
         return holds.iterator();

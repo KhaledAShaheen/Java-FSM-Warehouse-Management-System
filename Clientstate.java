@@ -125,7 +125,7 @@ public class Clientstate extends WarehouseState {
 
     public void showProductsInWaitlist() {
         Iterator<Hold> waitlist = warehouse.getWaitListByClientId(WarehouseContext.instance().getUser());
-        if (waitlist.hasNext() == false) {
+        if (waitlist == null) {
             System.out.println("No products in waitlist to print");
             return;
         }

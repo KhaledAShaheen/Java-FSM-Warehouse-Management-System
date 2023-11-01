@@ -54,7 +54,8 @@ public class Invoice implements Serializable {
   }
 
   public String toString() {
-    return "Client ID: " + clientId + " Product ID: " + product.getId() + " Name: " + product.getName() + " UnitPrice: "
+    return "Date: " + date + " Client ID: " + clientId + " Product ID: " + product.getId() + " Name: "
+        + product.getName() + " UnitPrice: "
         + product.getSalePrice()
         + " Qunatity: " + quantity + " Total Price: " + totalPrice + "\n";
   }
