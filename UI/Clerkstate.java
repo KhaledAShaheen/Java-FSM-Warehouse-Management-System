@@ -1,4 +1,10 @@
 import java.util.*;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+
 import java.text.*;
 import java.io.*;
 import java.lang.reflect.Member;
@@ -182,6 +188,44 @@ public class Clerkstate extends WarehouseState {
     }
 
     public void run() {
-        process();
+        frame = WarehouseContext.instance().getFrame();
+        frame.getContentPane().removeAll();
+        frame.setTitle("Manager");
+
+        // Set the BoxLayout for the content pane directly
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+
+        // Create and add the title label
+        JLabel titleLabel = new JLabel("Hi Boss! Manager Menu", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the label
+        frame.getContentPane().add(titleLabel);
+
+        // Add some vertical space after the title
+        frame.getContentPane().add(Box.createVerticalStrut(20));
+
+        addProductsButton = new AddProductButton();
+        addProductsButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+        processShipmentButton = new ProcessShipmentButton();
+        processShipmentButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+        clerkMenuButton = new ClerkMenuButton();
+        clerkMenuButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+        logoutButton = new logoutButtonManager();
+        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+
+        // Add buttons to the frame's content pane
+        frame.getContentPane().add(addProductsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+        frame.getContentPane().add(processShipmentButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+        frame.getContentPane().add(clerkMenuButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+        frame.getContentPane().add(logoutButton);
+
+        frame.setVisible(true);
+        frame.paint(frame.getGraphics());
+        frame.toFront();
+        frame.requestFocus();
+
     }
 }
