@@ -169,7 +169,7 @@ public class WarehouseContext {
                 System.exit(0);
             }
         });
-        LibFrame.setSize(400, 400);
+        LibFrame.setSize(1600, 900);
         LibFrame.setLocation(400, 400);
     }
 

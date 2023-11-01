@@ -1,3 +1,6 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
@@ -7,13 +10,8 @@ public class Managerstate extends WarehouseState {
   private static Warehouse warehouse;
   private WarehouseContext Warehousecontext;
   private static Managerstate instance;
-
-  private static final int EXIT = 0;
-  private static final int ADD_PRODUCTS = 1;
-  private static final int PROCESS_SHIPMENT = 2;
-  private static final int CLERK_MENU = 3;
-  private static final int LOGOUT = 4;
-  private static final int HELP = 5;
+  private JFrame frame;
+  private AbstractButton addProductsButton, processShipmentButton, clerkMenuButton, logoutButton;
 
   private Managerstate() {
     super();
@@ -28,135 +26,110 @@ public class Managerstate extends WarehouseState {
     return instance;
   }
 
-  public void help() {
-    System.out.println("Enter a number between 0 and 5 as explained below:");
-
-    System.out.println(EXIT + " to Exit\n");
-    System.out.println(ADD_PRODUCTS + " to add product");
-    System.out.println(PROCESS_SHIPMENT + " to receive a shipment");
-    System.out.println(CLERK_MENU + " to become a clerk");
-    System.out.println(LOGOUT + " to logout");
-    System.out.println(HELP + " for help");
-  }
-
-  private boolean yesOrNo(String prompt) {
-    String more = WarehouseContext.getToken(prompt + " (Y|y)[es] or anything else for no");
-    if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-      return false;
-    }
-    return true;
-  }
-
-  public int getCommand() {
-    do {
-      try {
-        int value = Integer.parseInt(WarehouseContext.getToken("Enter command: " + HELP + " for help"));
-        if (value >= EXIT && value <= HELP) {
-          return value;
-        }
-      } catch (NumberFormatException nfe) {
-        System.out.println("Enter a number");
-      }
-    } while (true);
-  }
-
-  public void process() {
-    int command;
-    help();
-    while ((command = getCommand()) != EXIT) {
-      switch (command) {
-
-        case ADD_PRODUCTS:
-          addProduct();
-          break;
-        case PROCESS_SHIPMENT:
-          processShippment();
-          break;
-        case CLERK_MENU:
-          clerkMenu();
-          break;
-        case LOGOUT:
-          logout();
-          break;
-        case HELP:
-          help();
-          break;
-      }
-    }
-    logout();
-  }
-
-  public void run() {
-    process();
-  }
-
   public void addProduct() {
     Product result;
-    do {
-      String name = WarehouseContext.getToken("Enter name");
-      int amount = WarehouseContext.getNumber("Enter amount");
-      float saleprice = WarehouseContext.getFloat("Enter saleprice");
-      result = warehouse.addProduct(name, amount, saleprice);
-      if (result != null) {
-        System.out.println(result);
-      } else {
-        System.out.println("Product could not be added");
-      }
-      if (!yesOrNo("Add more products?")) {
-        break;
-      }
-    } while (true);
+    String name = JOptionPane.showInputDialog(
+        Loginstate.instance().getFrame(), "Enter name: ");
+
+    int amount = Integer.parseInt(JOptionPane.showInputDialog(
+        Loginstate.instance().getFrame(), "Enter amount: "));
+
+    float saleprice = Float.parseFloat(JOptionPane.showInputDialog(
+        Loginstate.instance().getFrame(), "Enter saleprice: "));
+
+    result = warehouse.addProduct(name, amount, saleprice);
+    if (result != null) {
+      JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), result);
+
+    } else {
+      JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Product could not be added");
+    }
+    run();
+
   }
 
   public void processShippment() {
-    String productId = WarehouseContext.getToken("Enter product's id");
+    JFrame parentFrame = Loginstate.instance().getFrame();
+
+    String productId = JOptionPane.showInputDialog(parentFrame, "Enter product's id");
     Product result = warehouse.searchProduct(productId);
+
     if (result == null) {
-      System.out.println("Invalid Product Id");
+      JOptionPane.showMessageDialog(parentFrame, "Invalid Product Id");
+      run();
       return;
     }
-    int quantity = WarehouseContext.getNumber("Enter product quantity");
+
+    String qtyStr = JOptionPane.showInputDialog(parentFrame, "Enter product quantity");
+    int quantity;
+    try {
+      quantity = Integer.parseInt(qtyStr);
+    } catch (NumberFormatException e) {
+      JOptionPane.showMessageDialog(parentFrame, "Invalid quantity entered.");
+      run();
+      return;
+    }
     warehouse.addQtyToProduct(productId, quantity);
+
     Iterator<Hold> waitListItems = warehouse.getWaitListCopy(productId);
-    if (waitListItems.hasNext() == false) {
-      System.out.println("No waitlist items to print");
+
+    if (!waitListItems.hasNext()) {
+      JOptionPane.showMessageDialog(parentFrame, "No waitlist items to print");
+      run();
       return;
     }
-    int qtyLeft = 0;
+
     while (waitListItems.hasNext()) {
-      Hold waitListItem = (Hold) (waitListItems.next());
-      qtyLeft = result.getAmount();
-      System.out.println("Quantity left in stock: " + qtyLeft);
+      Hold waitListItem = (Hold) waitListItems.next();
+      int qtyLeft = result.getAmount();
+
+      JOptionPane.showMessageDialog(parentFrame, "Quantity left in stock: " + qtyLeft);
+
       if (qtyLeft == 0) {
-        System.out.println("Product amount in stock not sufficient.");
+        JOptionPane.showMessageDialog(parentFrame, "Product amount in stock not sufficient.");
         break;
       }
-      System.out.println(waitListItem);
-      if (yesOrNo("Leave on WaitList?")) {
-        System.out.println("Success!");
-        continue;
-      }
-      if (yesOrNo("Keep with existing quantity?")) {
-        Invoice invoice = warehouse.processShippment(productId, waitListItem.getClient().getClientID(),
-            waitListItem.getAmount());
-        if (invoice != null) {
-          System.out.println("Invoice:");
-          System.out.println(invoice.toString());
-        }
-        continue;
-      }
-      if (yesOrNo("Order with different qunatity?")) {
-        int newQuantity = WarehouseContext.getNumber("Enter the product's new Qunatity:");
-        Invoice invoice = warehouse.processShippment(productId, waitListItem.getClient().getClientID(),
-            newQuantity);
-        if (invoice != null) {
-          System.out.println("Invoice:");
-          System.out.println(invoice.toString());
-        }
-        continue;
-      }
 
+      int option = JOptionPane.showOptionDialog(parentFrame,
+          "Waitlist item details:\n" + waitListItem.toString(),
+          "Waitlist Item",
+          JOptionPane.YES_NO_CANCEL_OPTION,
+          JOptionPane.QUESTION_MESSAGE,
+          null,
+          new String[] { "Leave on WaitList", "Keep with existing quantity", "Order with different quantity" },
+          "Leave on WaitList");
+
+      switch (option) {
+        case 0: // Leave on WaitList
+          JOptionPane.showMessageDialog(parentFrame, "Success!");
+          break;
+        case 1: // Keep with existing quantity
+          Invoice invoice1 = warehouse.processShippment(productId, waitListItem.getClient().getClientID(),
+              waitListItem.getAmount());
+          if (invoice1 != null) {
+            JOptionPane.showMessageDialog(parentFrame, "Invoice:\n" + invoice1.toString());
+          }
+          break;
+        case 2: // Order with different quantity
+          String newQtyStr = JOptionPane.showInputDialog(parentFrame, "Enter the product's new Quantity:");
+          int newQuantity;
+          try {
+            newQuantity = Integer.parseInt(newQtyStr);
+          } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(parentFrame, "Invalid quantity entered.");
+            continue;
+          }
+          Invoice invoice2 = warehouse.processShippment(productId, waitListItem.getClient().getClientID(), newQuantity);
+          if (invoice2 != null) {
+            JOptionPane.showMessageDialog(parentFrame, "Invoice:\n" + invoice2.toString());
+          }
+          break;
+        default:
+          break;
+      }
     }
+    run();
+
   }
 
   public void clerkMenu() {
@@ -166,4 +139,47 @@ public class Managerstate extends WarehouseState {
   public void logout() {
     (WarehouseContext.instance()).changeState(3);
   }
+
+  public void run() {
+
+    frame = WarehouseContext.instance().getFrame();
+    frame.getContentPane().removeAll();
+    frame.setTitle("Manager");
+
+    // Set the BoxLayout for the content pane directly
+    frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+
+    // Create and add the title label
+    JLabel titleLabel = new JLabel("Hi Boss! Manager Menu", SwingConstants.CENTER);
+    titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the label
+    frame.getContentPane().add(titleLabel);
+
+    // Add some vertical space after the title
+    frame.getContentPane().add(Box.createVerticalStrut(20));
+
+    addProductsButton = new AddProductButton();
+    addProductsButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+    processShipmentButton = new ProcessShipmentButton();
+    processShipmentButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+    clerkMenuButton = new ClerkMenuButton();
+    clerkMenuButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+    logoutButton = new logoutButtonManager();
+    logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+
+    // Add buttons to the frame's content pane
+    frame.getContentPane().add(addProductsButton);
+    frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+    frame.getContentPane().add(processShipmentButton);
+    frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+    frame.getContentPane().add(clerkMenuButton);
+    frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+    frame.getContentPane().add(logoutButton);
+
+    frame.setVisible(true);
+    frame.paint(frame.getGraphics());
+    frame.toFront();
+    frame.requestFocus();
+  }
+
 }
