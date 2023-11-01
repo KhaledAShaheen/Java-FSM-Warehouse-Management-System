@@ -1,3 +1,6 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
@@ -15,6 +18,7 @@ public class WarehouseContext {
     public static final int IsManager = 2;
     private WarehouseState[] states;
     private int[][] nextState;
+    private static JFrame LibFrame;
 
     public static String getToken(String prompt) {
         do {
@@ -94,6 +98,10 @@ public class WarehouseContext {
         return userID;
     }
 
+    public JFrame getFrame() {
+        return LibFrame;
+    }
+
     private WarehouseContext() { // constructor
         System.out.println("In WarehouseContext constructor");
         if (yesOrNo("Look for saved data and use it?")) {
@@ -154,6 +162,15 @@ public class WarehouseContext {
         nextState[5][4] = -2;
         nextState[5][5] = -2;
         currentState = 3; // current is login
+
+        LibFrame = new JFrame("Warehouse GUI");
+        LibFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+        LibFrame.setSize(400, 400);
+        LibFrame.setLocation(400, 400);
     }
 
     public void changeState(int transition) {
