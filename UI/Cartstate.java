@@ -31,65 +31,154 @@ public class Cartstate extends WarehouseState {
     }
 
     public void showProductsInWishlist() {
+        JFrame frame = WarehouseContext.instance().getFrame();
+        frame.getContentPane().removeAll();
+        frame.setTitle("Wishlist");
+
+        // Text area for displaying records
+        JTextArea textArea = new JTextArea(15, 30);
+        textArea.setEditable(false); // make textArea non-editable
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        // Fetch records and display them in the text area
         Iterator<Record> records = warehouse.getWishList(WarehouseContext.instance().getUser());
-        if (records.hasNext() == false) {
-            System.out.println("No records to print");
-            return;
+        if (!records.hasNext()) {
+            textArea.setText("No records to print");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            while (records.hasNext()) {
+                Record record = records.next();
+                sb.append(record.toString()).append("\n");
+            }
+            textArea.setText(sb.toString());
         }
-        while (records.hasNext()) {
-            Record record = (Record) (records.next());
-            System.out.println(record);
-        }
+
+        // Add components to frame
+        frame.getContentPane().add(scrollPane);
+        frame.pack(); // Adjusts window to the contents
+        frame.setLocationRelativeTo(null); // Center the window
+        frame.setVisible(true);
     }
 
     public void addProduct() {
-        String productId = WarehouseContext.getToken("Enter product's id");
-        int quantity = WarehouseContext.getNumber("Enter product quantity");
+        JFrame frame = WarehouseContext.instance().getFrame();
+
+        // Prompt for product ID
+        String productId = JOptionPane.showInputDialog(frame, "Enter product's id:");
+        if (productId == null || productId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Product ID is required!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return; // Stop the operation if no ID is provided
+        }
+
+        // Prompt for quantity
+        Integer quantity = null;
+        while (quantity == null) {
+            String quantityString = JOptionPane.showInputDialog(frame, "Enter product quantity:");
+            try {
+                quantity = Integer.parseInt(quantityString);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid number for quantity!", "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        // Attempt to add the product to the wishlist
         Record result = warehouse.addProductToWishlist(productId, quantity, WarehouseContext.instance().getUser());
         if (result != null) {
-            System.out.println(result);
+            JOptionPane.showMessageDialog(frame, "Product added to wishlist:\n" + result, "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
         } else {
-            System.out.println("Product wasn't found");
+            JOptionPane.showMessageDialog(frame, "Product wasn't found", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void removeProduct() {
-        String productId = WarehouseContext.getToken("Enter product's id");
+        JFrame frame = WarehouseContext.instance().getFrame();
+
+        // Prompt for product ID
+        String productId = JOptionPane.showInputDialog(frame, "Enter product's id:");
+        if (productId == null || productId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Product ID is required!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return; // Stop the operation if no ID is provided
+        }
+
+        // Attempt to remove the product from the wishlist
         boolean result = warehouse.removeProductFromWishList(productId, WarehouseContext.instance().getUser());
         if (result) {
-            System.out.println("Product removed successfully");
+            JOptionPane.showMessageDialog(frame, "Product removed successfully", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
         } else {
-            System.out.println("Product wasn't found");
+            JOptionPane.showMessageDialog(frame, "Product wasn't found or could not be removed", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void changeProductQty() {
-        String productId = WarehouseContext.getToken("Enter product's id");
-        int newQuantity = WarehouseContext.getNumber("Enter the product's new Qunatity:");
-        boolean result = warehouse.editProductQunatity(productId, WarehouseContext.instance().getUser(), newQuantity);
+        JFrame frame = WarehouseContext.instance().getFrame();
+
+        // Prompt for the product ID
+        String productId = JOptionPane.showInputDialog(frame, "Enter product's id:");
+        if (productId == null || productId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Product ID is required!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return; // Exit if no ID is entered
+        }
+
+        // Prompt for the new quantity
+        String quantityString = JOptionPane.showInputDialog(frame, "Enter the product's new quantity:");
+        // Handle cancel option and empty input
+        if (quantityString == null || quantityString.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Quantity is required!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            return; // Exit if no quantity is entered
+        }
+
+        // Parse the quantity string to an integer
+        int newQuantity;
+        try {
+            newQuantity = Integer.parseInt(quantityString);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Invalid number format for quantity.", "Input Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return; // Exit if input is not a valid integer
+        }
+
+        // Attempt to change the product quantity
+        boolean result = warehouse.editProductQuantity(productId, WarehouseContext.instance().getUser(), newQuantity);
         if (result) {
-            System.out.println("Edit Successful!");
+            JOptionPane.showMessageDialog(frame, "Edit Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            System.out.println("Product wasn't found");
+            JOptionPane.showMessageDialog(frame, "Product wasn't found or could not be updated", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void checkOut() {
+        JFrame frame = WarehouseContext.instance().getFrame();
+
+        // Check if the wishlist is empty
         Iterator<Record> records = warehouse.getWishList(WarehouseContext.instance().getUser());
-        if (records.hasNext() == false) {
-            System.out.println("Nothing to checkout, wishlist empty!");
+        if (!records.hasNext()) {
+            JOptionPane.showMessageDialog(frame, "Nothing to checkout, wishlist is empty!", "Checkout",
+                    JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        if (WarehouseContext.yesOrNo("Confirm Order?")) {
+
+        // Ask for order confirmation
+        int confirm = JOptionPane.showConfirmDialog(frame, "Confirm Order?", "Checkout Confirmation",
+                JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Process the checkout if confirmed
             Iterator<Invoice> invoices = warehouse.createInvoice(WarehouseContext.instance().getUser());
-            System.out.println("Order confirmed!");
             if (invoices == null) {
-                System.out.println("nothing invoiced");
+                JOptionPane.showMessageDialog(frame, "An error occurred. No invoice was created.", "Checkout Error",
+                        JOptionPane.ERROR_MESSAGE);
             } else {
-                System.out.println("invoice created");
+                JOptionPane.showMessageDialog(frame, "Order confirmed and invoice created!", "Order Confirmed",
+                        JOptionPane.INFORMATION_MESSAGE);
+                // You might want to display the invoices here or handle them as needed
             }
         } else {
-            System.out.println("Order NOT confirmed!");
+            JOptionPane.showMessageDialog(frame, "Order NOT confirmed!", "Checkout", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
