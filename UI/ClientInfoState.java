@@ -1,19 +1,19 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
-import java.time.LocalDate;
 import java.io.*;
+import java.time.*;
 
 public class ClientInfoState extends WarehouseState {
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
     private WarehouseContext Warehousecontext;
     private static ClientInfoState instance;
-
-    private static final int EXIT = 0;
-    private static final int DISPLAY_CLIENTS = 1;
-    private static final int DISPLAY_CLIENTS_OUTSTANDING_BALANCE = 2;
-    private static final int DISPLAY_CLIENTS_NO_TRANSACTION = 3;
-    private static final int HELP = 4;
+    private JFrame frame;
+    private AbstractButton displayClientsButton, displayClientsOutstandingBalanceButton, displayClientsNoTransButton,
+            exitClientInfoStateButton;
 
     private ClientInfoState() {
         super();
@@ -28,116 +28,147 @@ public class ClientInfoState extends WarehouseState {
         return instance;
     }
 
-    public void help() {
-        System.out.println("Enter a number between 0 and 4 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
-        System.out.println(DISPLAY_CLIENTS + " to display all clients");
-        System.out.println(DISPLAY_CLIENTS_OUTSTANDING_BALANCE + " to display all clients with outstanding balance");
-        System.out.println(
-                DISPLAY_CLIENTS_NO_TRANSACTION + " to display all clients without transactions in the last 6 months");
-        System.out.println(HELP + " for help");
-    }
-
-    private boolean yesOrNo(String prompt) {
-        String more = WarehouseContext.getToken(prompt + " (Y|y)[es] or anything else for no");
-        if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-            return false;
-        }
-        return true;
-    }
-
-    public int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(WarehouseContext.getToken("Enter command: " + HELP + " for help"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
-    }
-
     public void showClients() {
         Iterator<Client> allClients = warehouse.getClients();
-        if (allClients.hasNext() == false) {
-            System.out.println("No clients to print");
+        StringBuilder clientsListBuilder = new StringBuilder();
+
+        if (!allClients.hasNext()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "No clients to display", "Clients List",
+                    JOptionPane.INFORMATION_MESSAGE);
             return;
         }
+
         while (allClients.hasNext()) {
-            Client client = (Client) (allClients.next());
-            System.out.println(client);
+            Client client = allClients.next();
+            clientsListBuilder.append(client.toString()).append("\n");
         }
+
+        JTextArea textArea = new JTextArea(clientsListBuilder.toString());
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        scrollPane.setPreferredSize(new Dimension(500, 250));
+
+        JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), scrollPane, "Clients List",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void showClientsWithBalance() {
         Iterator<Client> allClients = warehouse.getClients();
+        StringBuilder clientsWithBalanceBuilder = new StringBuilder();
         int hasClients = 0;
-        if (allClients.hasNext() == false) {
-            System.out.println("No clients to print");
+
+        if (!allClients.hasNext()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "No clients to display",
+                    "Clients with Balance", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
+
         while (allClients.hasNext()) {
-            Client client = (Client) (allClients.next());
+            Client client = allClients.next();
             if (client.getBalance() > 0) {
-                System.out.println(client);
+                clientsWithBalanceBuilder.append(client.toString()).append("\n");
                 hasClients++;
             }
         }
+
         if (hasClients == 0) {
-            System.out.println("No clients to print with outstanding balance");
-            return;
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "No clients with outstanding balance",
+                    "Clients with Balance", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JTextArea textArea = new JTextArea(clientsWithBalanceBuilder.toString());
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            scrollPane.setPreferredSize(new Dimension(500, 250));
+
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), scrollPane, "Clients with Balance",
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
     public void showClientsWithoutTransactions() {
         Iterator<Invoice> invoices = warehouse.getInvoiceList(WarehouseContext.instance().getUser());
+        StringBuilder clientsWithoutTransactionsBuilder = new StringBuilder();
+        LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
         int hasInvoices = 0;
+
         if (invoices == null) {
-            System.out.println("No invoices to print");
+            JOptionPane.showMessageDialog(WarehouseContext.instance().getFrame(), "No invoices to display",
+                    "Clients without Transactions", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        LocalDate sixMonthsAgo = LocalDate.now().minusMonths(6);
-
         while (invoices.hasNext()) {
-            Invoice invoice = (Invoice) (invoices.next());
+            Invoice invoice = invoices.next();
             if (invoice.getDate().isBefore(sixMonthsAgo)) {
-                System.out.println(invoice);
+                clientsWithoutTransactionsBuilder.append(invoice.toString()).append("\n");
                 hasInvoices++;
             }
         }
-        if (hasInvoices == 0) {
-            System.out.println("No invoices to print");
-            return;
-        }
-    }
 
-    public void process() {
-        int command;
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-                case DISPLAY_CLIENTS:
-                    showClients();
-                    break;
-                case DISPLAY_CLIENTS_OUTSTANDING_BALANCE:
-                    showClientsWithBalance();
-                    break;
-                case DISPLAY_CLIENTS_NO_TRANSACTION:
-                    showClientsWithoutTransactions();
-                    break;
-                case HELP:
-                    help();
-                    break;
-            }
+        if (hasInvoices == 0) {
+            JOptionPane.showMessageDialog(WarehouseContext.instance().getFrame(),
+                    "No clients without transactions in the past six months", "Clients without Transactions",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JTextArea textArea = new JTextArea(clientsWithoutTransactionsBuilder.toString());
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            scrollPane.setPreferredSize(new Dimension(500, 250));
+
+            JOptionPane.showMessageDialog(WarehouseContext.instance().getFrame(), scrollPane,
+                    "Clients without Transactions", JOptionPane.INFORMATION_MESSAGE);
         }
-        logout();
     }
 
     public void run() {
-        process();
+        frame = WarehouseContext.instance().getFrame();
+        frame.getContentPane().removeAll();
+        frame.setTitle("Client Information State");
+
+        // Set the BoxLayout for the content pane directly
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+
+        // Create and add the title label
+        JLabel titleLabel = new JLabel("Client Information State", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the label
+        frame.getContentPane().add(titleLabel);
+
+        // Add some vertical space after the title
+        frame.getContentPane().add(Box.createVerticalStrut(20));
+
+        // Instantiate custom buttons
+        displayClientsButton = new DisplayClientsButton();
+        displayClientsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        displayClientsOutstandingBalanceButton = new DisplayClientsOutstandingBalanceButton();
+        displayClientsOutstandingBalanceButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        displayClientsNoTransButton = new DisplayClientsNoTransButton();
+        displayClientsNoTransButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        exitClientInfoStateButton = new ExitClientInfoStateButton();
+        exitClientInfoStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Add custom buttons to the frame's content pane
+        frame.getContentPane().add(displayClientsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(displayClientsOutstandingBalanceButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(displayClientsNoTransButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(exitClientInfoStateButton);
+
+        frame.setVisible(true);
+        frame.paint(frame.getGraphics());
+        frame.toFront();
+        frame.requestFocus();
+
     }
 
     public void logout() {

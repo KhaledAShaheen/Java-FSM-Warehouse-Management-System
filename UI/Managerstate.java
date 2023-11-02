@@ -44,7 +44,6 @@ public class Managerstate extends WarehouseState {
     } else {
       JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Product could not be added");
     }
-    run();
 
   }
 
@@ -56,7 +55,6 @@ public class Managerstate extends WarehouseState {
 
     if (result == null) {
       JOptionPane.showMessageDialog(parentFrame, "Invalid Product Id");
-      run();
       return;
     }
 
@@ -66,7 +64,6 @@ public class Managerstate extends WarehouseState {
       quantity = Integer.parseInt(qtyStr);
     } catch (NumberFormatException e) {
       JOptionPane.showMessageDialog(parentFrame, "Invalid quantity entered.");
-      run();
       return;
     }
     warehouse.addQtyToProduct(productId, quantity);
@@ -75,7 +72,6 @@ public class Managerstate extends WarehouseState {
 
     if (!waitListItems.hasNext()) {
       JOptionPane.showMessageDialog(parentFrame, "No waitlist items to print");
-      run();
       return;
     }
 
@@ -128,7 +124,6 @@ public class Managerstate extends WarehouseState {
           break;
       }
     }
-    run();
 
   }
 

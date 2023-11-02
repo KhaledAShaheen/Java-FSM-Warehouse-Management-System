@@ -1,28 +1,18 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-
 import java.text.*;
 import java.io.*;
-import java.lang.reflect.Member;
 
 public class Clerkstate extends WarehouseState {
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
     private WarehouseContext context;
     private static Clerkstate instance;
-    private static final int EXIT = 0;
-    private static final int ADD_CLIENT = 1;
-    private static final int SHOW_PRODUCTS = 2;
-    private static final int CLIENT_INFO_STATE = 3;
-    private static final int ACCEPT_PAYMENT = 4;
-    private static final int CLIENT_MENU = 5;
-    private static final int SHOW_PRODUCTS_IN_WAITLIST = 6;
-    private static final int LOGOUT = 7;
-    private static final int HELP = 8;
+    private JFrame frame;
+    private AbstractButton addClientButton, showProductsButton, switchToClientInfoStateButton, acceptPaymentButton,
+            clientMenuButton, showProductsInWaitlistButton, logoutButton;
 
     private Clerkstate() {
         super();
@@ -37,53 +27,54 @@ public class Clerkstate extends WarehouseState {
         return instance;
     }
 
-    public static int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(WarehouseContext.getToken("Enter command:" + HELP + " for help"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
-    }
-
-    public void help() {
-        System.out.println("Enter a number between 0 and 8 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
-        System.out.println(ADD_CLIENT + " to add a client");
-        System.out.println(SHOW_PRODUCTS + " to print products");
-        System.out.println(CLIENT_INFO_STATE + " go to client info state");
-        System.out.println(ACCEPT_PAYMENT + " to accept a client's payment");
-        System.out.println(CLIENT_MENU + " to switch to the client menu");
-        System.out.println(SHOW_PRODUCTS_IN_WAITLIST + " to show waitlist for a product");
-        System.out.println(LOGOUT + " logout of clerk state");
-        System.out.println(HELP + " for help");
-    }
-
     public void addClient() {
-        String name = WarehouseContext.getToken("Enter client name");
-        String address = WarehouseContext.getToken("Enter address");
-        Client result;
-        result = warehouse.addClient(name, address);
-        if (result == null) {
-            System.out.println("Could not add client");
+        String name = JOptionPane.showInputDialog(
+                Loginstate.instance().getFrame(), "Enter client name:");
+
+        String address = JOptionPane.showInputDialog(
+                Loginstate.instance().getFrame(), "Enter address:");
+        // Make sure name and address are not empty before proceeding to add a client
+        if (name != null && !name.trim().isEmpty() && address != null && !address.trim().isEmpty()) {
+            Client result = warehouse.addClient(name, address);
+
+            if (result != null) {
+                // Assuming Client class overrides toString to provide meaningful information
+                JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                        "Client added successfully:\n" + result);
+            } else {
+                JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Client could not be added");
+            }
+        } else {
+            // Inform the user that the name and address are required
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                    "Name and address are required to add a client.", "Input Error", JOptionPane.ERROR_MESSAGE);
         }
-        System.out.println(result);
     }
 
     public void showProducts() {
         Iterator<Product> allProducts = warehouse.getProducts();
-        if (allProducts.hasNext() == false) {
-            System.out.println("No products to print");
+        if (!allProducts.hasNext()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "No products to show");
             return;
         }
+
+        // Use a StringBuilder to accumulate product strings
+        StringBuilder productListBuilder = new StringBuilder();
         while (allProducts.hasNext()) {
-            Product product = (Product) (allProducts.next());
-            System.out.println(product);
+            Product product = allProducts.next();
+            productListBuilder.append(product.toString()).append("\n");
         }
+
+        // Create a JTextArea to display your products
+        JTextArea textArea = new JTextArea(20, 25);
+        textArea.setText(productListBuilder.toString());
+        textArea.setEditable(false); // Make it read-only
+
+        // Wrap JTextArea inside a JScrollPane in case of overflow
+        JScrollPane scrollPane = new JScrollPane(textArea);
+
+        // Display the JScrollPane in a JOptionPane
+        JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), scrollPane);
     }
 
     public void clientInfoState() {
@@ -91,112 +82,113 @@ public class Clerkstate extends WarehouseState {
     }
 
     public void showProductsInWaitlist() {
-        String productId = WarehouseContext.getToken("Enter product's id");
+        String productId = JOptionPane.showInputDialog(
+                Loginstate.instance().getFrame(), "Enter product's id:");
+
+        if (productId == null || productId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Product ID is required.");
+            return;
+        }
+
         Product product = warehouse.searchProduct(productId);
         if (product == null) {
-            System.out.println("Product not found");
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Product not found");
             return;
         }
+
         Iterator<Hold> holds = warehouse.getWaitList(productId);
-        if (holds.hasNext() == false) {
-            System.out.println("No holds to print");
+        if (!holds.hasNext()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "No holds to show for this product");
             return;
         }
+
+        StringBuilder holdsListBuilder = new StringBuilder();
         while (holds.hasNext()) {
-            Hold hold = (Hold) (holds.next());
-            System.out.println(hold);
+            Hold hold = holds.next();
+            holdsListBuilder.append(hold.toString()).append("\n");
         }
+
+        JTextArea textArea = new JTextArea(20, 25);
+        textArea.setText(holdsListBuilder.toString());
+        textArea.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), scrollPane, "Products in Waitlist",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     public void acceptPayment() {
-        String clientid = WarehouseContext.getToken("Enter client's id");
+        String clientid = JOptionPane.showInputDialog(
+                Loginstate.instance().getFrame(), "Enter client's id:");
+
+        if (clientid == null || clientid.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Client ID is required.");
+            return;
+        }
         Client client = warehouse.searchClient(clientid);
         if (client == null) {
-            System.out.println("Invalid Client Id");
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Invalid Client Id");
             return;
         }
         if (client.getBalance() == 0) {
-            System.out.println("client balance is 0");
+            JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Client balance is 0");
             return;
         }
-        System.out.println("Client Balance: " + client.getBalance());
+        JOptionPane.showMessageDialog(Loginstate.instance().getFrame(), "Client Balance: " + client.getBalance());
         while (true) {
-            float payment = WarehouseContext.getFloat("Enter payment amount:");
-            if (payment > client.getBalance()) {
-                System.out.println("Enter payment less than or equal to " + client.getBalance());
-            } else if (payment <= 0) {
-                System.out.println("Enter payment more than 0 ");
-            } else {
-                warehouse.acceptPayment(payment, clientid);
-                break;
+            String paymentStr = JOptionPane.showInputDialog(
+                    Loginstate.instance().getFrame(), "Enter payment amount:");
+            // Validate if payment is a valid float and within the range
+            try {
+                float payment = Float.parseFloat(paymentStr);
+                if (payment > client.getBalance()) {
+                    JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                            "Enter payment less than or equal to " + client.getBalance());
+                } else if (payment <= 0) {
+                    JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                            "Enter payment more than 0");
+                } else {
+                    warehouse.acceptPayment(payment, clientid);
+                    JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                            "Payment accepted. New Balance: " + client.getBalance());
+                    break;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(Loginstate.instance().getFrame(),
+                        "Please enter a valid payment amount.", "Input Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     public void clientMenu() {
-        String userID = WarehouseContext.getToken("Please input the client id: ");
-        if (Warehouse.instance().searchClient(userID) != null) {
-            (WarehouseContext.instance()).setClient(userID);
-            (WarehouseContext.instance()).changeState(0);
-        } else
-            System.out.println("Invalid client id.");
-    }
-
-    public void logout() {
-        if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk) {
-
-            (WarehouseContext.instance()).changeState(3);
-        } else if (WarehouseContext.instance().getLogin() == WarehouseContext.IsManager) {
-            // to login \n");
-            (WarehouseContext.instance()).changeState(2);
-        } else
-            (WarehouseContext.instance()).changeState(3);
-    }
-
-    public void process() {
-        int command;
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-                case ADD_CLIENT:
-                    addClient();
-                    break;
-                case SHOW_PRODUCTS:
-                    showProducts();
-                    break;
-                case CLIENT_INFO_STATE:
-                    clientInfoState();
-                    break;
-                case ACCEPT_PAYMENT:
-                    acceptPayment();
-                    break;
-                case CLIENT_MENU:
-                    clientMenu();
-                    break;
-                case SHOW_PRODUCTS_IN_WAITLIST:
-                    showProductsInWaitlist();
-                    break;
-                case HELP:
-                    help();
-                    break;
-                case LOGOUT:
-                    logout();
-                    break;
-            }
+        String userID = JOptionPane.showInputDialog(
+                WarehouseContext.instance().getFrame(), "Please input the client id: ");
+        if (userID == null || userID.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    WarehouseContext.instance().getFrame(), "Client ID is required.");
+            run();
+            return;
         }
-        logout();
+        if (Warehouse.instance().searchClient(userID) != null) {
+            WarehouseContext.instance().setClient(userID);
+            WarehouseContext.instance().changeState(0);
+            // Assuming changeState(0) refreshes the UI to the appropriate client context
+        } else {
+            JOptionPane.showMessageDialog(
+                    WarehouseContext.instance().getFrame(), "Invalid client id.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void run() {
         frame = WarehouseContext.instance().getFrame();
         frame.getContentPane().removeAll();
-        frame.setTitle("Manager");
+        frame.setTitle("Clerk");
 
         // Set the BoxLayout for the content pane directly
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
         // Create and add the title label
-        JLabel titleLabel = new JLabel("Hi Boss! Manager Menu", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Clerk Menu", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the label
         frame.getContentPane().add(titleLabel);
@@ -204,22 +196,41 @@ public class Clerkstate extends WarehouseState {
         // Add some vertical space after the title
         frame.getContentPane().add(Box.createVerticalStrut(20));
 
-        addProductsButton = new AddProductButton();
-        addProductsButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
-        processShipmentButton = new ProcessShipmentButton();
-        processShipmentButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
-        clerkMenuButton = new ClerkMenuButton();
-        clerkMenuButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
-        logoutButton = new logoutButtonManager();
-        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button
+        // Create buttons for the required actions
+        addClientButton = new AddClientButton();
+        addClientButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showProductsButton = new ShowProductsButton();
+        showProductsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        switchToClientInfoStateButton = new SwitchToClientInfoStateButton();
+        switchToClientInfoStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        acceptPaymentButton = new AcceptPaymentButton();
+        acceptPaymentButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        clientMenuButton = new ClientMenuButton();
+        clientMenuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showProductsInWaitlistButton = new ShowProductsInWaitlistButton();
+        showProductsInWaitlistButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        logoutButton = new LogoutButtonClerk();
+        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Add buttons to the frame's content pane
-        frame.getContentPane().add(addProductsButton);
-        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
-        frame.getContentPane().add(processShipmentButton);
-        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
-        frame.getContentPane().add(clerkMenuButton);
-        frame.getContentPane().add(Box.createVerticalStrut(10)); // Add space between buttons
+        frame.getContentPane().add(addClientButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(showProductsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(switchToClientInfoStateButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(acceptPaymentButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(clientMenuButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(showProductsInWaitlistButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
         frame.getContentPane().add(logoutButton);
 
         frame.setVisible(true);

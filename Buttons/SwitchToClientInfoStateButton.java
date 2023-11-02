@@ -5,11 +5,11 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class ProcessShipmentButton extends JButton implements ActionListener {
+public class SwitchToClientInfoStateButton extends JButton implements ActionListener {
     // private static ClerkButton instance;
     // private JButton userButton;
-    public ProcessShipmentButton() {
-        super("Process Shippment");
+    public SwitchToClientInfoStateButton() {
+        super("Switch To Client Info State");
         this.setListener();
     }
 
@@ -20,9 +20,7 @@ public class ProcessShipmentButton extends JButton implements ActionListener {
 
     public void actionPerformed(ActionEvent event) {
         Loginstate.instance().clear();
-        Managerstate.instance().processShippment();
-        Managerstate.instance().run();
-
+        Clerkstate.instance().clientInfoState();
     }
 
 }

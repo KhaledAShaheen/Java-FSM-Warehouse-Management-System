@@ -21,6 +21,8 @@ public class AddProductButton extends JButton implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         Loginstate.instance().clear();
         Managerstate.instance().addProduct();
+        Managerstate.instance().run();
+
     }
 
 }
