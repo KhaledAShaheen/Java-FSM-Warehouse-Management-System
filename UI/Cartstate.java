@@ -1,20 +1,21 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
 import java.io.*;
-import java.lang.reflect.Member;
 
 public class Cartstate extends WarehouseState {
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
     private WarehouseContext context;
+    private JFrame frame;
+    private AbstractButton showCartButton, addProductButton, removeProductButton,
+            changeProdQtyButton,
+            checkoutButton, logoutButtonCartState;
+
     private static Cartstate instance;
     private static final int EXIT = 0;
-    private static final int VIEW_CART = 1;
-    private static final int ADD_PRODUCT = 2;
-    private static final int REMOVE_PRODUCT = 3;
-    private static final int CHANGE_QTY = 4;
-    private static final int CHECKOUT = 5;
-    private static final int HELP = 6;
 
     private Cartstate() {
         super();
@@ -27,30 +28,6 @@ public class Cartstate extends WarehouseState {
             instance = new Cartstate();
         }
         return instance;
-    }
-
-    public static int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(WarehouseContext.getToken("Enter command:" + HELP + " for help"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
-    }
-
-    public void help() {
-        System.out.println("Enter a number between 0 and 6 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
-        System.out.println(VIEW_CART + " to view cart");
-        System.out.println(ADD_PRODUCT + " to add a product to cart");
-        System.out.println(REMOVE_PRODUCT + " to remove a product from cart");
-        System.out.println(CHANGE_QTY + " to change a product's quantity in cart");
-        System.out.println(CHECKOUT + " to checkout");
-        System.out.println(HELP + " for help");
     }
 
     public void showProductsInWishlist() {
@@ -120,35 +97,60 @@ public class Cartstate extends WarehouseState {
         WarehouseContext.instance().changeState(0);
     }
 
-    public void process() {
-        int command;
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-                case VIEW_CART:
-                    showProductsInWishlist();
-                    break;
-                case ADD_PRODUCT:
-                    addProduct();
-                    break;
-                case REMOVE_PRODUCT:
-                    removeProduct();
-                    break;
-                case CHANGE_QTY:
-                    changeProductQty();
-                    break;
-                case CHECKOUT:
-                    checkOut();
-                    break;
-                case HELP:
-                    help();
-                    break;
-            }
-        }
-        logout();
-    }
-
     public void run() {
-        process();
+        frame = WarehouseContext.instance().getFrame();
+        frame.getContentPane().removeAll();
+        frame.setTitle("Cart Menu"); // Changed title to match context
+
+        // Set the BoxLayout for the content pane directly
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+
+        // Create and add the title label
+        JLabel titleLabel = new JLabel("Cart Menu", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        frame.getContentPane().add(titleLabel);
+
+        // Add some vertical space after the title
+        frame.getContentPane().add(Box.createVerticalStrut(20));
+
+        // Create instances of custom button classes for the specified buttons
+        showCartButton = new ShowCartButton();
+        showCartButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        addProductButton = new AddProductCartButton();
+        addProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        removeProductButton = new RemoveProductButton();
+        removeProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        changeProdQtyButton = new ChangeProdQtyButton();
+        changeProdQtyButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        checkoutButton = new CheckoutButton();
+        checkoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        logoutButtonCartState = new LogoutButtonCartState();
+        logoutButtonCartState.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Add the custom buttons to the frame's content pane
+        frame.getContentPane().add(showCartButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(addProductButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(removeProductButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(changeProdQtyButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(checkoutButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(logoutButtonCartState);
+
+        frame.setVisible(true);
+        frame.validate(); // This is to validate the container after adding/removing components
+        frame.repaint(); // Use repaint to refresh the GUI after making changes
+        frame.toFront();
+        frame.requestFocus();
+
     }
 }
