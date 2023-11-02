@@ -103,8 +103,14 @@ public class WarehouseContext {
     }
 
     private WarehouseContext() { // constructor
-        System.out.println("In WarehouseContext constructor");
-        if (yesOrNo("Look for saved data and use it?")) {
+        int option = JOptionPane.showConfirmDialog(
+                null,
+                "Look for saved data and use it?",
+                "Load Data",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (option == JOptionPane.YES_OPTION) {
             retrieve();
         } else {
             warehouse = Warehouse.instance();
@@ -164,13 +170,10 @@ public class WarehouseContext {
         currentState = 3; // current is login
 
         LibFrame = new JFrame("Warehouse GUI");
-        LibFrame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
-            }
-        });
+        LibFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // better use the default close operation
         LibFrame.setSize(1600, 900);
-        LibFrame.setLocation(400, 400);
+        LibFrame.setLocationRelativeTo(null); // Center on screen
+        LibFrame.setVisible(true); // Make frame visible
     }
 
     public void changeState(int transition) {
@@ -187,14 +190,30 @@ public class WarehouseContext {
     }
 
     private void terminate() {
-        if (yesOrNo("Save data?")) {
-            if (Warehouse.save()) {
-                System.out.println(" The Warehouse has been successfully saved in the file WarehouseData \n");
+        // Use JOptionPane.showConfirmDialog to ask the user if they want to save data
+        int option = JOptionPane.showConfirmDialog(
+                null,
+                "Save data?",
+                "Exit Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        // If the user chooses 'YES', attempt to save the Warehouse data
+        if (option == JOptionPane.YES_OPTION) {
+            boolean saveSuccess = Warehouse.save(); // Assuming Warehouse.save() is a static method returning a boolean
+            if (saveSuccess) {
+                JOptionPane.showMessageDialog(null,
+                        "The Warehouse has been successfully saved in the file WarehouseData.");
             } else {
-                System.out.println(" There has been an error in saving \n");
+                JOptionPane.showMessageDialog(null, "There has been an error in saving.", "Save Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
-        System.out.println(" Goodbye \n ");
+
+        // Say goodbye to the user using JOptionPane instead of System.out.println
+        JOptionPane.showMessageDialog(null, "Goodbye!", "Exit", JOptionPane.INFORMATION_MESSAGE);
+
+        // Exit the application
         System.exit(0);
     }
 

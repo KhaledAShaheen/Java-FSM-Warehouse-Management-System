@@ -146,6 +146,7 @@ public class Warehouse implements Serializable {
             totalPriceInvoice += price;
         }
         client.setBalanace(client.getBalance() + totalPriceInvoice);
+        client.deleteRecords();
         return getInvoiceList(clientId);
     }
 

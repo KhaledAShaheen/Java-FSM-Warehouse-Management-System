@@ -171,7 +171,7 @@ public class Cartstate extends WarehouseState {
             // Process the checkout if confirmed
             Iterator<Invoice> invoices = warehouse.createInvoice(WarehouseContext.instance().getUser());
             if (invoices == null) {
-                JOptionPane.showMessageDialog(frame, "An error occurred. No invoice was created.", "Checkout Error",
+                JOptionPane.showMessageDialog(frame, " Nothing invoiced was created.", "Checkout Error",
                         JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(frame, "Order confirmed and invoice created!", "Order Confirmed",

@@ -23,6 +23,10 @@ public class Client implements Serializable {
 
   }
 
+  public void deleteRecords() {
+    wishList.deleteRecords();
+  }
+
   public void addPayment(double payment) {
     paymentList.add(payment);
   }

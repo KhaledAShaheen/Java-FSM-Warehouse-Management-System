@@ -10,6 +10,10 @@ public class WishList implements Serializable {
         records = new LinkedList<Record>();
     }
 
+    public void deleteRecords() {
+        records.clear();
+    }
+
     public Record insertRecord(Record record) {
         Record recordToChange = search(record.getProduct().getId());
         if (recordToChange != null) {
