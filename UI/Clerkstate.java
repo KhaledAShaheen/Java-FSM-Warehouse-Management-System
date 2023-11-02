@@ -176,6 +176,8 @@ public class Clerkstate extends WarehouseState {
         } else {
             JOptionPane.showMessageDialog(
                     WarehouseContext.instance().getFrame(), "Invalid client id.", "Error", JOptionPane.ERROR_MESSAGE);
+            run();
+
         }
     }
 

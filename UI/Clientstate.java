@@ -1,20 +1,17 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.text.*;
+import java.io.*;
 
 public class Clientstate extends WarehouseState {
     private static Clientstate clientstate;
     private static Warehouse warehouse;
-
-    private static final int EXIT = 0;
-    private static final int SHOW_CLIENT_DETAILS = 1;
-    private static final int SHOW_PRODUCT_LIST = 2;
-    private static final int SHOW_CLIENT_TRANSACTIONS = 3;
-    private static final int SHOW_CLIENT_PAYMENTS = 4;
-    private static final int CART_STATE = 5;
-    private static final int DISPLAY_WAITLIST = 6;
-    private static final int PROCESS_ORDER = 7;
-    private static final int LOGOUT = 8;
-    private static final int HELP = 9;
+    private JFrame frame;
+    private AbstractButton showClientDetailsButton, showProductListButton, showClientTransactionsButton,
+            showClientPaymentsButton,
+            cartStateButton, displayWaitlistButton, logoutButtonClient;
 
     private Clientstate() {
         warehouse = Warehouse.instance();
@@ -26,46 +23,6 @@ public class Clientstate extends WarehouseState {
         } else {
             return clientstate;
         }
-    }
-
-    public Calendar getDate(String prompt) {
-        do {
-            try {
-                Calendar date = new GregorianCalendar();
-                String item = WarehouseContext.getToken(prompt);
-                DateFormat df = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
-                date.setTime(df.parse(item));
-                return date;
-            } catch (Exception fe) {
-                System.out.println("Please input a date as mm/dd/yy");
-            }
-        } while (true);
-    }
-
-    public int getCommand() {
-        do {
-            try {
-                int value = Integer.parseInt(WarehouseContext.getToken("Enter command:" + HELP + " for help"));
-                if (value >= EXIT && value <= HELP) {
-                    return value;
-                }
-            } catch (NumberFormatException nfe) {
-                System.out.println("Enter a number");
-            }
-        } while (true);
-    }
-
-    public void help() {
-        System.out.println("Enter a number between 0 and 9 as explained below:");
-        System.out.println(EXIT + " to Exit\n");
-        System.out.println(SHOW_CLIENT_DETAILS + " to show client details");
-        System.out.println(SHOW_PRODUCT_LIST + " to show products with sale price");
-        System.out.println(SHOW_CLIENT_TRANSACTIONS + " to show transactions");
-        System.out.println(SHOW_CLIENT_PAYMENTS + " to show payments");
-        System.out.println(CART_STATE + " go to cart state");
-        System.out.println(DISPLAY_WAITLIST + " to display client's waitlist");
-        System.out.println(LOGOUT + " to logout of client state");
-        System.out.println(HELP + " for help");
     }
 
     public void showClientDetails() {
@@ -125,7 +82,7 @@ public class Clientstate extends WarehouseState {
 
     public void showProductsInWaitlist() {
         Iterator<Hold> waitlist = warehouse.getWaitListByClientId(WarehouseContext.instance().getUser());
-        if (waitlist == null) {
+        if (waitlist == null || waitlist.hasNext() == false) {
             System.out.println("No products in waitlist to print");
             return;
         }
@@ -136,46 +93,68 @@ public class Clientstate extends WarehouseState {
 
     }
 
-    public void process() {
-        int command;
-        help();
-        while ((command = getCommand()) != EXIT) {
-            switch (command) {
-
-                case SHOW_CLIENT_DETAILS:
-                    showClientDetails();
-                    break;
-                case SHOW_PRODUCT_LIST:
-                    showProducts();
-                    break;
-                case SHOW_CLIENT_TRANSACTIONS:
-                    showTransactions();
-                    break;
-                case SHOW_CLIENT_PAYMENTS:
-                    showPayments();
-                    break;
-                case CART_STATE:
-                    cartState();
-                    break;
-                case DISPLAY_WAITLIST:
-                    showProductsInWaitlist();
-                    break;
-                case LOGOUT:
-                    logout();
-                    break;
-                case HELP:
-                    help();
-                    break;
-            }
-        }
-        logout();
-    }
-
     public void run() {
-        process();
+        frame = WarehouseContext.instance().getFrame();
+        frame.getContentPane().removeAll();
+        frame.setTitle("Client Menu");
+
+        // Set the BoxLayout for the content pane directly
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+
+        // Create and add the title label
+        JLabel titleLabel = new JLabel("Client Menu", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the label
+        frame.getContentPane().add(titleLabel);
+
+        // Add some vertical space after the title
+        frame.getContentPane().add(Box.createVerticalStrut(20));
+
+        // Create instances of custom button classes
+        showClientDetailsButton = new ShowClientDetailsButton();
+        showClientDetailsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showProductListButton = new ShowProductListButton();
+        showProductListButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showClientTransactionsButton = new ShowClientTransactionsButton();
+        showClientTransactionsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showClientPaymentsButton = new ShowClientPaymentsButton();
+        showClientPaymentsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        cartStateButton = new CartStateButton();
+        cartStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        displayWaitlistButton = new DisplayWaitlistButton();
+        displayWaitlistButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        logoutButtonClient = new LogoutButtonClient();
+        logoutButtonClient.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Add the custom buttons to the frame's content pane
+        frame.getContentPane().add(showClientDetailsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(showProductListButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(showClientTransactionsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(showClientPaymentsButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(cartStateButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(displayWaitlistButton);
+        frame.getContentPane().add(Box.createVerticalStrut(10));
+        frame.getContentPane().add(logoutButtonClient);
+
+        frame.setVisible(true);
+        frame.repaint(); // Use repaint instead of paint for GUI refresh
+        frame.toFront();
+        frame.requestFocus();
+
     }
 
-   public void logout() {
+    public void logout() {
         if ((WarehouseContext.instance()).getLogin() == WarehouseContext.IsClerk) { // stem.out.println(" going to clerk
                                                                                     // \n ");
             (WarehouseContext.instance()).changeState(1); // exit with a code 1
@@ -188,6 +167,5 @@ public class Clientstate extends WarehouseState {
         } else
             (WarehouseContext.instance()).changeState(4); // exit code 4, indicates error
     }
-
 
 }
