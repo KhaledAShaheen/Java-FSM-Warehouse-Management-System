@@ -35,38 +35,6 @@ public class WarehouseContext {
         } while (true);
     }
 
-    public static int getNumber(String prompt) {
-        do {
-            try {
-                String item = getToken(prompt);
-                Integer num = Integer.valueOf(item);
-                return num.intValue();
-            } catch (NumberFormatException nfe) {
-                System.out.println("Please input a number ");
-            }
-        } while (true);
-    }
-
-    public static float getFloat(String prompt) {
-        do {
-            try {
-                String item = getToken(prompt);
-                Float num = Float.valueOf(item);
-                return num.intValue();
-            } catch (NumberFormatException nfe) {
-                System.out.println("Please input a number ");
-            }
-        } while (true);
-    }
-
-    public static boolean yesOrNo(String prompt) {
-        String more = getToken(prompt + " (Y|y)[es] or anything else for no");
-        if (more.charAt(0) != 'y' && more.charAt(0) != 'Y') {
-            return false;
-        }
-        return true;
-    }
-
     private void retrieve() {
         try {
             Warehouse tempWarehouse = Warehouse.retrieve();
