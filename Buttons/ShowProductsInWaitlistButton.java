@@ -9,7 +9,7 @@ public class ShowProductsInWaitlistButton extends JButton implements ActionListe
     // private static ClerkButton instance;
     // private JButton userButton;
     public ShowProductsInWaitlistButton() {
-        super("Show Products In Waitlist");
+        super("Show A Product Waitlist");
         this.setListener();
     }
 
